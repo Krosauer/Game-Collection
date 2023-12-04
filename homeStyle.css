@@ -1,0 +1,90 @@
+body {
+    margin: 0;
+    background: linear-gradient(blue,lightgreen);
+    background-repeat: no-repeat;
+    background-attachment: fixed;
+}
+
+
+ul {
+    
+    list-style-type: none;
+    background-color: #333;
+    margin: 0;
+    padding: 0;
+    overflow: hidden;
+    
+
+}
+li {
+    float: left;
+    font-family: "Press Start 2P";
+
+    
+}
+
+.listLink {
+    display: flex;
+    color: white;
+    text-decoration: none;
+    padding: 14px 16px;
+    text-align: center;
+}
+
+.listLink:hover {
+    background-color: #222;
+}
+
+.listLink:active {
+    background-color: lightgrey;
+}
+
+#navBar {
+    display: flex;
+    justify-content: center;
+    background-color: #333;
+
+}
+
+
+
+#titleBox {
+    background-color: white;
+    width: 350px;
+    height: 100px;
+    position: relative;
+    top: 300px;
+    left: 50%;
+    margin-left: -175px;
+    margin-top: -50px;
+    
+    
+}
+
+#title {
+    font-family: "Press Start 2P";
+    text-align: center;
+    align-items: center;
+    padding: 10px;
+    margin: 0;
+}
+
+#namesBox {
+    position: relative;
+    
+}
+
+#namesList {
+    background-color: white;
+    display: flex;
+    justify-content: center;
+}
+
+.names {
+    font-family: "Press Start 2P";
+    font-size: 12px;
+    display: flex;
+    padding: 10px;
+    
+    text-align: center;
+}
