@@ -49,6 +49,7 @@ li {
 
 
 #titleBox {
+    border-radius: 15px;
     background-color: white;
     width: 350px;
     height: 100px;
