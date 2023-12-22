@@ -5,18 +5,40 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>EconClicker</title>
     <link rel="stylesheet" href="clickerStyle.css">
+    <script src="https://kit.fontawesome.com/6a8b4bf0f6.js" crossorigin="anonymous"></script>
 </head>
-<body>
+<body onload="setup()">
     
-
+<div class="farmerGrid">
+    <div class="farmers"><i class="fa-solid fa-wheat-awn"></i></div>
+    <div class="farmers"><i class="fa-solid fa-wheat-awn"></i></div>
+    <div class="farmers"><i class="fa-solid fa-wheat-awn"></i></div>
+    <div class="farmers"><i class="fa-solid fa-wheat-awn"></i></div>
+    <div class="farmers"><i class="fa-solid fa-wheat-awn"></i></div>
+    <div class="farmers"><i class="fa-solid fa-wheat-awn"></i></div>
+    <div class="farmers"><i class="fa-solid fa-wheat-awn"></i></div>
+    <div class="farmers"><i class="fa-solid fa-wheat-awn"></i></div>
+</div>
 <div class="mainbutton">
     <button class="clicker" onclick="onClickMain()">Make Money</button>
-    <p id="currency"class="clickCount">$<a id="clicks">0</a></p>
 </div>
+
+
+<div class = "statistics">
+    <p>Assets:</p>
+    <p>Money: $<a id = "clicks">0</a></p>
+    <p>Food Count: <a id = "foodNum">0</a></p>
+    <p>Number of Farmers: <a id = "farmerNumber">0</a></p>
+
+</div>
+
+ 
+
+
 <div class="store">
-    <button class="purchase" onclick="onClickIncrease()">Increase Money Per Click</button>
-    <button class="purchase"></button>
-    <button class="purchase"></button>
+    <button class="purchase" onclick="increasePerClick()">Increase Money Per Click<p id="clickPrice">50</p></button>
+    <button class="purchase" onclick="buyFarmer()">Buy a farmer<p id="farmerPrice">100</p></button>
+    <button class="purchase" onclick="sellFood()">Sell Food <p id = "foodSellAmount">10/$<a id="foodSellPrice">10</a></p></button>
     <button class="purchase"></button>
     <button class="purchase"></button>
     <button class="purchase"></button>
