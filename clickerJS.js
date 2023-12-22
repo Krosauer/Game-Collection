@@ -12,7 +12,6 @@ function onClickMain() {
 
 function onClickIncrease(){
   //if you have enough money, increase level
-  //!!!perclick is not increasing correctly
 
   if (document.getElementById("clicks").innerHTML > perClickPrice[perClickLevel]) {
     document.getElementById("clicks").innerHTML = clicks-perClickPrice[perClickLevel];
