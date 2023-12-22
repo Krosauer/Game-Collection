@@ -59,6 +59,7 @@ body {
     font-size: 10px;
     font-family: Georgia, 'Times New Roman', Times, serif;
     color: darkgreen;
+    padding: 5px;
     
 }
 
@@ -73,3 +74,40 @@ p {
     color: white;
 }
 
+#clickPrice {
+    color: darkgreen;
+    font-family: Georgia, 'Times New Roman', Times, serif;
+}
+#farmerPrice {
+    color: darkgreen;
+}
+
+.farmerGrid{
+    display: grid;
+    grid-template-columns: repeat(8,20px);
+
+}
+
+.farmers{
+    /*background-color: brown;*/
+    width: 20px;
+    height: 20px;
+    border-radius: 50%;
+    
+
+}
+
+.fa-solid{
+    color: brown;
+}
+
+.statistics {
+    margin: 20px;
+}
+
+#foodSellPrice {
+    color: darkgreen;
+}
+#foodSellAmount {
+    color: darkgreen;
+}
