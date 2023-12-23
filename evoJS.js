@@ -1,4 +1,4 @@
-let orgDiameter = 2;
+let orgDiameter = 3;
 let organisms = [];
 let xCanvas = 300;
 //with #myCanvas width = 1024px
@@ -55,6 +55,12 @@ function setIntervals(){
 }
 function clearIntervals(){
     clearInterval(drawInterval);
+    clearInterval(predateInterval);
+}
+function changeIntervals(){
+    clearIntervals();
+    predateInterval = setInterval(predate, 999);
+    drawInterval = setInterval(draw,2000);
 }
 
 function draw() {
@@ -94,6 +100,9 @@ function draw() {
     reproduce();
     die();
     updateStats();
+    if(hasL2){
+        changeIntervals();
+    }
 }
 
 
@@ -219,19 +228,13 @@ function updateStats(){
     for(let i = 0; i < organisms.length; i++){
         let org = organisms[i];
         if(org.level === 0){
-            level0Orgs[i] = org;
+            level0Orgs.append(org);
         }
-    }
-    for(let i = 0; i < organisms.length; i++){
-        let org = organisms[i];
-        if(org.level === 1){
-            level1Orgs[i] = org;
+        else if(org.level === 1){
+            level1Orgs.append(org);
         }
-    }
-    for(let i = 0; i < organisms.length; i++){
-        let org = organisms[i];
-        if(org.level === 2){
-            level2Orgs[i] = org;
+        else if(org.level === 2){
+            level2Orgs.append(org);
         }
     }
     if(level1Orgs.length === 0){
@@ -255,13 +258,13 @@ function updateStats(){
             level0ChildSum += organisms[k].maxChild;
             level0ReproduceRangeSum += organisms[k].reproduceRange;
         }
-        if(organisms[k].level === 1){
+        else if(organisms[k].level === 1){
             hasL1 = true;
             level1BirthDistanceSum += organisms[k].birthDistance;
             level1ChildSum += organisms[k].maxChild;
             level1ReproduceRangeSum += organisms[k].reproduceRange;
         }
-        if(organisms[k].level === 2){
+        else if(organisms[k].level === 2){
             hasL2 = true;
             level2BirthDistanceSum += organisms[k].birthDistance;
             level2ChildSum += organisms[k].maxChild;
