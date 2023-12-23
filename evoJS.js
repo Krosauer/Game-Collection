@@ -1,4 +1,4 @@
-let orgDiameter = 4;
+let orgDiameter = 2;
 let organisms = [];
 let xCanvas = 300;
 //with #myCanvas width = 1024px
@@ -12,6 +12,7 @@ let reproduceInterval;
 let evolutionRate = .001;
 let count = 0;
 let hasL1 = false;
+let hasL2 = false;
 
 let canvas;
 let context;
@@ -69,6 +70,21 @@ function draw() {
         }
         if(org.level === 1){
             context.fillStyle = "yellow";
+        }
+        if(org.level === 2){
+            context.fillStyle = "blue";
+        }
+        if(org.level === 3){
+            context.fillStyle = "orange";
+        }
+        if(org.level === 4){
+            context.fillStyle = "red";
+        }
+        if(org.level === 5){
+            context.fillStyle = "purple";
+        }
+        if(org.level === 6){
+            context.fillStyle = "white";
         }
         context.fill();
         context.strokeStyle = 'black'; // Set the outline color
@@ -162,64 +178,6 @@ function predate(){
     }
 }
 
-function updateStats(){
-    let level0Orgs = [];
-    let level1Orgs = [];
-    for(let i = 0; i < organisms.length; i++){
-        let org = organisms[i];
-        if(org.level === 0){
-            level0Orgs[i] = org;
-        }
-    }
-    for(let i = 0; i < organisms.length; i++){
-        let org = organisms[i];
-        if(org.level === 1){
-            level1Orgs[i] = org;
-        }
-    }
-    let arr = []
-    for(let i = 0; i < level1Orgs.length; i++){
-        arr[i] = level1Orgs[i].reproduceRange;
-    }
-    console.log(arr)
-    if(level1Orgs.length === 0){
-        hasL1 = false;
-    }
-    let level0BirthDistanceSum = 0;
-    let level0ChildSum = 0;
-    let level0ReproduceRangeSum = 0;
-    let level1BirthDistanceSum = 0;
-    let level1ChildSum = 0;
-    let level1ReproduceRangeSum = 0;
-    for(let k = 0; k < organisms.length; k++){
-        if(organisms[k].level === 0) {
-            level0BirthDistanceSum += organisms[k].birthDistance;
-            level0ChildSum += organisms[k].maxChild;
-            level0ReproduceRangeSum += organisms[k].reproduceRange;
-        }
-        if(organisms[k].level === 1){
-            hasL1 = true;
-            level1BirthDistanceSum += organisms[k].birthDistance;
-            level1ChildSum += organisms[k].maxChild;
-            level1ReproduceRangeSum += organisms[k].reproduceRange;
-        }
-    }
-    let name0 = "Cyanobacteria:"
-    let l0BD = "Average birth distance: " + level0BirthDistanceSum / level0Orgs.length;
-    let l0CN = "Average offspring count: " + level0ChildSum / level0Orgs.length;
-    let l0RR = "Average reproduction range: " + level0ReproduceRangeSum / level0Orgs.length;
-    let name1 = "Zooplankton:"
-    let l1BD = "Average birth distance: " + level1BirthDistanceSum / level1Orgs.length;
-    let l1CN = "Average offspring count: " + level1ChildSum / level1Orgs.length;
-    let l1RR = "Average reproduction range: " + level1ReproduceRangeSum / level1Orgs.length;
-    //console.log(level1Orgs.length)
-    let answer = "\n" + name0 + "\n" + l0BD + "\n" + l0CN + "\n" + l0RR;
-    if(hasL1){
-        answer += "\n" + name1 + "\n" + l1BD + "\n" + l1CN + "\n" + l1RR;
-    }
-    document.getElementById('stats').innerText = answer;
-}
-
 function die(){
     let temp = [];
     for(let i = 0; i < organisms.length; i++){
@@ -254,9 +212,93 @@ function die(){
     }
 }
 
+function updateStats(){
+    let level0Orgs = [];
+    let level1Orgs = [];
+    let level2Orgs = [];
+    for(let i = 0; i < organisms.length; i++){
+        let org = organisms[i];
+        if(org.level === 0){
+            level0Orgs[i] = org;
+        }
+    }
+    for(let i = 0; i < organisms.length; i++){
+        let org = organisms[i];
+        if(org.level === 1){
+            level1Orgs[i] = org;
+        }
+    }
+    for(let i = 0; i < organisms.length; i++){
+        let org = organisms[i];
+        if(org.level === 2){
+            level2Orgs[i] = org;
+        }
+    }
+    if(level1Orgs.length === 0){
+        hasL1 = false;
+    }
+    if(level2Orgs.length === 0){
+        hasL2 = false;
+    }
+    let level0BirthDistanceSum = 0;
+    let level0ChildSum = 0;
+    let level0ReproduceRangeSum = 0;
+    let level1BirthDistanceSum = 0;
+    let level1ChildSum = 0;
+    let level1ReproduceRangeSum = 0;
+    let level2BirthDistanceSum = 0;
+    let level2ChildSum = 0;
+    let level2ReproduceRangeSum = 0;
+    for(let k = 0; k < organisms.length; k++){
+        if(organisms[k].level === 0) {
+            level0BirthDistanceSum += organisms[k].birthDistance;
+            level0ChildSum += organisms[k].maxChild;
+            level0ReproduceRangeSum += organisms[k].reproduceRange;
+        }
+        if(organisms[k].level === 1){
+            hasL1 = true;
+            level1BirthDistanceSum += organisms[k].birthDistance;
+            level1ChildSum += organisms[k].maxChild;
+            level1ReproduceRangeSum += organisms[k].reproduceRange;
+        }
+        if(organisms[k].level === 2){
+            hasL2 = true;
+            level2BirthDistanceSum += organisms[k].birthDistance;
+            level2ChildSum += organisms[k].maxChild;
+            level2ReproduceRangeSum += organisms[k].reproduceRange;
+        }
+    }
+    let name0 = "Cyanobacteria:"
+    let l0BD = "Average birth distance: " + level0BirthDistanceSum / level0Orgs.length;
+    let l0CN = "Average offspring count: " + level0ChildSum / level0Orgs.length;
+    let l0RR = "Average reproduction range: " + level0ReproduceRangeSum / level0Orgs.length;
+    let name1 = "Zooplankton:"
+    let l1BD = "Average birth distance: " + level1BirthDistanceSum / level1Orgs.length;
+    let l1CN = "Average offspring count: " + level1ChildSum / level1Orgs.length;
+    let l1RR = "Average reproduction range: " + level1ReproduceRangeSum / level1Orgs.length;
+    let name2 = "Fish:"
+    let l2BD = "Average birth distance: " + level2BirthDistanceSum / level2Orgs.length;
+    let l2CN = "Average offspring count: " + level2ChildSum / level2Orgs.length;
+    let l2RR = "Average reproduction range: " + level2ReproduceRangeSum / level2Orgs.length;
+    //console.log(level1Orgs.length)
+    let answer = "\n" + name0 + "\n" + l0BD + "\n" + l0CN + "\n" + l0RR;
+    if(hasL1){
+        answer += "\n" + name1 + "\n" + l1BD + "\n" + l1CN + "\n" + l1RR;
+    }
+    if(hasL2){
+        answer += "\n" + name2 + "\n" + l2BD + "\n" + l2CN + "\n" + l2RR;
+    }
+    document.getElementById('stats').innerText = answer;
+}
+
 function pause(){
     clearIntervals();
     context.closePath();
+}
+
+function resume(){
+    setIntervals();
+    context.beginPath();
 }
 
 function reset(){
