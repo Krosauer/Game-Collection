@@ -5,7 +5,8 @@ let xCanvas = 300;
 //with #myCanvas width = 1024px
 let yCanvas = 150;
 //with #myCanvas height = 526px
-let startingPlants = 10;
+let startingPlants = 100;
+let startingAnimals = 50;
 let drawInterval;
 let predateInterval;
 let dieInterval;
@@ -47,6 +48,10 @@ function setup() {
         let org = new Organism(Math.random()*xCanvas, Math.random()*yCanvas, 0, Math.random()*20 + 20, Math.random()*2 + 1, Math.random()*50 + 25)
         organisms.push(org);
     }
+    for(let i = 0; i < startingAnimals; i++){
+        let org = new Organism(Math.random()*xCanvas, Math.random()*yCanvas, 1, Math.random()*20 + 20, Math.random()*2 + 1, Math.random()*50 + 25)
+        organisms.push(org);
+    }
     draw();
     clearIntervals();
     setIntervals();
@@ -61,10 +66,15 @@ function setIntervals(){
 function clearIntervals(){
     clearInterval(drawInterval);
     clearInterval(predateInterval);
+    clearInterval(dieInterval);
+    clearInterval(reproduceInterval);
 }
 function changeIntervals(){
     clearIntervals();
-    reproduceInterval = setInterval(reproduce,2000);
+    dieInterval = setInterval(die,100);
+    predateInterval = setInterval(predate, 100);
+    drawInterval = setInterval(draw,50);
+    reproduceInterval = setInterval(reproduce,200);
 }
 
 function draw() {
