@@ -1,60 +1,78 @@
-let stationaryDiameter = 3;
-let mobileDiameter = 6;
+let stationaryDiameter = 2;
+let mobileDiameter = 4;
+// Array of all current organisms
 let organisms = [];
+// Canvas dimensions
 let xCanvas = 300;
-//with #myCanvas width = 1024px
 let yCanvas = 150;
-//with #myCanvas height = 526px
+// Organisms at beginning of game 
 let startingPlants = 100;
 let startingAnimals = 50;
+
 let drawInterval;
 let predateInterval;
 let dieInterval;
 let reproduceInterval;
+// Chance that an organism will be born mutated as another species
 let evolutionRate = .001;
+// Checks if the organism array contains organisms with species of level 1,2
 let hasL1 = false;
 let hasL2 = false;
+let intervalHasChanged = false;
 
 let canvas;
 let context;
 
-function Organism(xPos, yPos, levelP, birthDistance, maxChildP, reproduceRangeP){
-    this.x = xPos;
-    this.y = yPos;
-    this.level = levelP
-    this.timeAlive = 0;
-    this.birthDistance = birthDistance;
-    this.numChild = 0;
-    this.maxChild = maxChildP;
-    this.reproduceRange = reproduceRangeP
-    if(levelP > 0){
-        this.food = 10;
-        this.lifeSpan = 70;
-    }
-    else{
-        this.food = 1;
-        this.lifeSpan = 15;
-    }
-    this.diameter = stationaryDiameter;
-    if(this.level >= 2){
-        this.diameter = mobileDiameter;
+class Organism{
+    constructor(xPos, yPos, levelP, birthDistance, maxChildP, reproduceRangeP){
+        this.x = xPos;
+        this.y = yPos;
+        // Species number
+        this.level = levelP
+        this.timeAlive = 0;
+        // Distance from the midpoint of parent organisms
+        this.birthDistance = birthDistance;
+        // Number of children a parent has produced this turn
+        this.numChild = 0;
+        // Number of children a parent is capable of producing in a single turn
+        this.maxChild = maxChildP;
+        // Max distance a mate can be from the organism to mate
+        this.reproduceRange = reproduceRangeP
+        // Only for plants
+        if(levelP === 0){
+            this.food = 1;
+            // Turns until natural death
+            this.lifeSpan = 15;
+        }
+        // For animals
+        else{
+            this.food = 10;
+            // Turns until natural death
+            this.lifeSpan = 70;
+        }
+        this.diameter = stationaryDiameter;
+        if(this.level >= 2){
+            this.diameter = mobileDiameter;
+        }
     }
 }
 
+// May change from button to onload later
 function setup() {
     canvas = document.getElementById('myCanvas');
     context = canvas.getContext('2d');
     for(let i = 0; i < startingPlants; i++){
+        // Adds plants with random coordinates and random genetics to organisms array (birthDistance: 30, maxChild: 2, reproduceRange: 63)
         let org = new Organism(Math.random()*xCanvas, Math.random()*yCanvas, 0, Math.random()*20 + 20, Math.random()*2 + 1, Math.random()*50 + 25)
         organisms.push(org);
     }
+    // Adds level 1 animals with random coordinates and random genetics to organisms array
     for(let i = 0; i < startingAnimals; i++){
         let org = new Organism(Math.random()*xCanvas, Math.random()*yCanvas, 1, Math.random()*20 + 20, Math.random()*2 + 1, Math.random()*50 + 25)
         organisms.push(org);
     }
     draw();
-    clearIntervals();
-    setIntervals();
+    changeIntervalsBack();
 }
 
 function setIntervals(){
@@ -69,19 +87,27 @@ function clearIntervals(){
     clearInterval(dieInterval);
     clearInterval(reproduceInterval);
 }
+
 function changeIntervals(){
     clearIntervals();
-    dieInterval = setInterval(die,100);
+    dieInterval = setInterval(die,1000);
     predateInterval = setInterval(predate, 100);
     drawInterval = setInterval(draw,50);
-    reproduceInterval = setInterval(reproduce,200);
+    reproduceInterval = setInterval(reproduce,2000);
+}
+
+function changeIntervalsBack(){
+    clearIntervals();
+    setIntervals();
 }
 
 function draw() {
+    // Resets canvas
     context.clearRect(0,0, canvas.width, canvas.height);
     for(let i = 0; i < organisms.length; i++){
         let org = organisms[i];
         context.beginPath();
+        // Draws organisms
         context.ellipse(org.x,org.y,org.diameter,org.diameter,0,0,2 * Math.PI);
         if(org.level === 0){
             context.fillStyle = "green";
@@ -109,14 +135,22 @@ function draw() {
         context.lineWidth = 0.5; // Set the outline width
         context.stroke();
     }
-    if(hasL2){
+    if(hasL2 && !intervalHasChanged){
         changeIntervals();
+        intervalHasChanged = true;
     }
+    if(!hasL2 && intervalHasChanged){
+        changeIntervalsBack();
+        intervalHasChanged = false;
+    }
+    moveOrganisms();
 }
 
 
 function reproduce(){
-    let temp = [];
+    // Organisms that are newly born
+    let newBorn = [];
+    // Organisms that have not maxed out their reproductive capacity in a given turn
     let horny = [];
     for(let i = 0; i < organisms.length; i++){
         let org = organisms[i];
@@ -127,15 +161,21 @@ function reproduce(){
         if(horny.includes(org1)){
             for(let j = i+1; j < organisms.length; j++){
                 let org2 = organisms[j];
+                // Checks if the two organisms are the same species and if they are close enough to reproduce
                 if(org1.level === org2.level && horny.includes(org2) && inRange(org1,org2,average(org1.reproduceRange, org2.reproduceRange))){
+                    // Birth food taken from parents
                     org1.food -= 5;
                     org2.food -= 5;
+                    // Average of parent birth distances
                     let b = average(org1.birthDistance, org2.birthDistance);
+                    // Randmizes coordinates with range birth distance
                     let xPos = average(org1.x,org2.x) + Math.random()*b - b/2;
                     let yPos = average(org1.y, org2.y) + Math.random()*b - b/2;
-                    let rand = Math.random();
+                    // Randomizes birth distance with range 10
                     let birthDistance = b + Math.random()*10 - 5;
                     let level;
+                    let rand = Math.random();
+                    // Species Mutations
                     if(rand > 1 - evolutionRate){
                         level = org1.level + 1;
                     }
@@ -145,14 +185,18 @@ function reproduce(){
                     else{
                         level = org1.level;
                     }
+                    // Randomizes maximimum children, range 2
                     let maxChild = average(org1.maxChild, org2.maxChild) + Math.random()*2 - 1;
+                    // Randomizes reproduction rang, range 20
                     let reproduceRange = average(org1.reproduceRange, org2.reproduceRange) + Math.random()*20 - 10
+                    // Checks if new organism is on canvas
                     if(xPos >= mobileDiameter && xPos <= xCanvas - mobileDiameter && yPos >= mobileDiameter && yPos <= yCanvas - mobileDiameter){
                         let newOrg = new Organism(xPos, yPos, level, birthDistance, maxChild,reproduceRange);
-                        temp.push(newOrg);
+                        newBorn.push(newOrg);
                     }
                     org1.numChild ++;
                     org2.numChild ++;
+                    // Checks if the organisms have produced max offspring
                     if(org1.numChild >= org1.maxChild){
                         horny.splice(j,1);
                     }
@@ -164,25 +208,25 @@ function reproduce(){
             }
         }
     }
-    for(let i = 0; i < temp.length; i++){
-        let org = temp[i]
+    // Adds new organisms to main organism array
+    for(let i = 0; i < newBorn.length; i++){
+        let org = newBorn[i]
         organisms.push(org);
     }
     updateStats();
 }
 
+//Checks to see if predator organisms are touching prey organisms. Kills prey, increments food for predator.
 function predate(){
     let temp = [];
     for(let i = 0; i < organisms.length; i++){
         let org1 = organisms[i];
         if(org1.level !== 0){
-            org1.food -= 1;
             for(let j = 0; j < organisms.length; j++){
                 let org2 = organisms[j];
-                if(!temp.includes(org2) && org1.level - 1 === org2.level && inRange(org1,org2,org1.diameter + org2.diameter)){
+                if(!temp.includes(org2) && org1.level > org2.level && inRange(org1,org2,org1.diameter + org2.diameter)){
                     temp.push(org2);
                     org1.food += 5;
-                    //console.log("Predation Death");
                 }
             }
         }
@@ -197,8 +241,10 @@ function predate(){
     }
 }
 
+// Kills off organisms that: overlap with organisms of same species (population death), food = 0 (Starvation Death), or reach max age (Natural Death)
 function die(){
-    let temp = [];
+    // Array of organisms to be removed
+    let dead = [];
     for(let i = 0; i < organisms.length; i++){
         let org1 = organisms[i];
         org1.timeAlive++;
@@ -206,24 +252,27 @@ function die(){
             let org2 = organisms[j];
             //console.log(org1.level === org2.level && inRange(org1, org2, average(org1.diameter, org2.diameter)))
             if (org1.level === org2.level && inRange(org1, org2, average(org1.diameter, org2.diameter))) {
-                temp.push(org1);
-                temp.push(org2);
-                //console.log("Population Death");
+                dead.push(org1);
+                dead.push(org2);
+                //Population Death
             }
         }
         if(org1.timeAlive >= org1.lifeSpan){
-            temp.push(org1);
-            //console.log("Natural Death");
+            dead.push(org1);
+            //Natural Death
+        }
+        if(org1.level > 0){
+            org1.food -= 1;
         }
         if(org1.level > 0 && org1.food <= 0){
-            temp.push(org1);
-            //console.log("Food Limited Death");
+            dead.push(org1);
+            //Food Limited Death
         }
     }
-    //print(temp)
+    // Remove dead organisms
     for(let i = organisms.length - 1; i >= 0; i--){
-        for(let j = 0; j < temp.length; j++){
-            if(organisms[i] === temp[j]){
+        for(let j = 0; j < dead.length; j++){
+            if(organisms[i] === dead[j]){
                 organisms.splice(i,1);
                 break;
             }
@@ -235,6 +284,7 @@ function updateStats(){
     let level0Orgs = [];
     let level1Orgs = [];
     let level2Orgs = [];
+    // Adds organisms to respective arrays according to their species
     for(let i = 0; i < organisms.length; i++){
         let org = organisms[i];
         if(org.level === 0){
@@ -247,6 +297,7 @@ function updateStats(){
             level2Orgs.push(org);
         }
     }
+    // Updates has species booleans
     if(level1Orgs.length === 0){
         hasL1 = false;
     }
@@ -262,6 +313,7 @@ function updateStats(){
     let level2BirthDistanceSum = 0;
     let level2ChildSum = 0;
     let level2ReproduceRangeSum = 0;
+    //Finds average statistics for each species
     for(let k = 0; k < organisms.length; k++){
         if(organisms[k].level === 0) {
             level0BirthDistanceSum += organisms[k].birthDistance;
@@ -281,6 +333,7 @@ function updateStats(){
             level2ReproduceRangeSum += organisms[k].reproduceRange;
         }
     }
+    // Printed statistics
     let name0 = "Cyanobacteria:"
     let l0BD = "Average birth distance: " + level0BirthDistanceSum / level0Orgs.length;
     let l0CN = "Average offspring count: " + level0ChildSum / level0Orgs.length;
@@ -293,7 +346,6 @@ function updateStats(){
     let l2BD = "Average birth distance: " + level2BirthDistanceSum / level2Orgs.length;
     let l2CN = "Average offspring count: " + level2ChildSum / level2Orgs.length;
     let l2RR = "Average reproduction range: " + level2ReproduceRangeSum / level2Orgs.length;
-    //console.log(level1Orgs.length)
     let answer = "\n" + name0 + "\n" + l0BD + "\n" + l0CN + "\n" + l0RR;
     if(hasL1){
         answer += "\n" + name1 + "\n" + l1BD + "\n" + l1CN + "\n" + l1RR;
@@ -302,6 +354,84 @@ function updateStats(){
         answer += "\n" + name2 + "\n" + l2BD + "\n" + l2CN + "\n" + l2RR;
     }
     document.getElementById('stats').innerText = answer;
+}
+
+function moveOrganisms(){
+    for(let i = 0; i < organisms.length; i++){
+        if(org.level > 1){
+            let hungry = false;
+            let scared = false;
+            if(org.food <= 5){
+                hungry = true;
+            }
+            for(let j = 0; j < organisms.length; j++){
+                let predator = organisms[j];
+                if(j !== i && predator.level > org.level){
+                    scared = true;
+                }
+            }
+            if(hungry){
+                let prey;
+                for(let j = 0; j < organisms.length; j++){
+                    let tempOrg = organisms[j];
+                    let minDistance = Number.MAX_SAFE_INTEGER;
+                    if(tempOrg.level < org.level){
+                        if(findDistance(org, tempOrg) < minDistance){
+                            prey = tempOrg;
+                            minDistance = findDistance(org, tempOrg);
+                        }
+                    }
+                }
+                moveTo(org, prey);
+            }
+            else if(scared){
+                let predator;
+                for(let j = 0; j < organisms.length; j++){
+                    let tempOrg = organisms[j];
+                    let minDistance = Number.MAX_SAFE_INTEGER;
+                    if(tempOrg.level > org.level){
+                        if(findDistance(org, tempOrg) < minDistance){
+                            predator = tempOrg;
+                            minDistance = findDistance(org, tempOrg);
+                        }
+                    }
+                }
+                moveAway(org, predator);
+            }
+            else{
+                let mate;
+                for(let j = 0; j < organisms.length; j++){
+                    let tempOrg = organisms[j];
+                    let minDistance = Number.MAX_SAFE_INTEGER;
+                    if(tempOrg.level === org.level){
+                        if(findDistance(org, tempOrg) < minDistance){
+                            mate = tempOrg;
+                            minDistance = findDistance(org, tempOrg);
+                        }
+                    }
+                }
+                moveTo(org, mate);
+            }
+        }
+    }
+}
+
+function moveTo(org, goal){
+    distance = findDistance(org, goal);
+    dx = (org.x - goal.x) / distance;
+    dy = (org.y - goal.y) / distance;
+    console.log(1 === Math.sqrt(Math.pow(dx,2), Math.pow(dy,2)));
+    org.x += dx;
+    org.y += dy;
+}
+
+function moveAway(org, danger){
+    distance = findDistance(org, danger);
+    dx = (org.x - danger.x) / distance;
+    dy = (org.y - danger.y) / distance;
+    console.log(1 === Math.sqrt(Math.pow(dx,2), Math.pow(dy,2)));
+    org.x -= dx;
+    org.y -= dy;
 }
 
 function pause(){
@@ -324,6 +454,10 @@ function reset(){
 
 function inRange(org1, org2, distance){
     return Math.sqrt(Math.pow(org1.x - org2.x, 2) + Math.pow(org1.y - org2.y, 2)) <= distance;
+}
+
+function findDistance(org1, org2){
+    return Math.sqrt(Math.pow(org1.x - org2.x, 2) + Math.pow(org1.y - org2.y, 2))
 }
 
 function average(num1, num2){
