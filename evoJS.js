@@ -1,4 +1,5 @@
-let orgDiameter = 3;
+let stationaryDiameter = 3;
+let mobileDiameter = 6;
 let organisms = [];
 let xCanvas = 300;
 //with #myCanvas width = 1024px
@@ -10,7 +11,6 @@ let predateInterval;
 let dieInterval;
 let reproduceInterval;
 let evolutionRate = .001;
-let count = 0;
 let hasL1 = false;
 let hasL2 = false;
 
@@ -21,7 +21,6 @@ function Organism(xPos, yPos, levelP, birthDistance, maxChildP, reproduceRangeP)
     this.x = xPos;
     this.y = yPos;
     this.level = levelP
-    this.diameter = orgDiameter;
     this.timeAlive = 0;
     this.birthDistance = birthDistance;
     this.numChild = 0;
@@ -29,11 +28,15 @@ function Organism(xPos, yPos, levelP, birthDistance, maxChildP, reproduceRangeP)
     this.reproduceRange = reproduceRangeP
     if(levelP > 0){
         this.food = 10;
-        this.lifeSpan = 50;
+        this.lifeSpan = 70;
     }
     else{
         this.food = 1;
-        this.lifeSpan = 10;
+        this.lifeSpan = 15;
+    }
+    this.diameter = stationaryDiameter;
+    if(this.level >= 2){
+        this.diameter = mobileDiameter;
     }
 }
 
@@ -50,8 +53,10 @@ function setup() {
 }
 
 function setIntervals(){
-    predateInterval = setInterval(predate, 99);
-    drawInterval = setInterval(draw,200);
+    dieInterval = setInterval(die,100);
+    predateInterval = setInterval(predate, 100);
+    drawInterval = setInterval(draw,50);
+    reproduceInterval = setInterval(reproduce,200);
 }
 function clearIntervals(){
     clearInterval(drawInterval);
@@ -59,18 +64,15 @@ function clearIntervals(){
 }
 function changeIntervals(){
     clearIntervals();
-    predateInterval = setInterval(predate, 999);
-    drawInterval = setInterval(draw,2000);
+    reproduceInterval = setInterval(reproduce,2000);
 }
 
 function draw() {
-    count++;
-    //console.log(count + "-----------------------------")
     context.clearRect(0,0, canvas.width, canvas.height);
     for(let i = 0; i < organisms.length; i++){
         let org = organisms[i];
         context.beginPath();
-        context.ellipse(org.x,org.y,orgDiameter,orgDiameter,0,0,2 * Math.PI);
+        context.ellipse(org.x,org.y,org.diameter,org.diameter,0,0,2 * Math.PI);
         if(org.level === 0){
             context.fillStyle = "green";
         }
@@ -97,9 +99,6 @@ function draw() {
         context.lineWidth = 0.5; // Set the outline width
         context.stroke();
     }
-    reproduce();
-    die();
-    updateStats();
     if(hasL2){
         changeIntervals();
     }
@@ -138,7 +137,7 @@ function reproduce(){
                     }
                     let maxChild = average(org1.maxChild, org2.maxChild) + Math.random()*2 - 1;
                     let reproduceRange = average(org1.reproduceRange, org2.reproduceRange) + Math.random()*20 - 10
-                    if(xPos >= orgDiameter && xPos <= xCanvas - orgDiameter && yPos >= orgDiameter && yPos <= yCanvas - orgDiameter){
+                    if(xPos >= mobileDiameter && xPos <= xCanvas - mobileDiameter && yPos >= mobileDiameter && yPos <= yCanvas - mobileDiameter){
                         let newOrg = new Organism(xPos, yPos, level, birthDistance, maxChild,reproduceRange);
                         temp.push(newOrg);
                     }
@@ -159,6 +158,7 @@ function reproduce(){
         let org = temp[i]
         organisms.push(org);
     }
+    updateStats();
 }
 
 function predate(){
@@ -228,13 +228,13 @@ function updateStats(){
     for(let i = 0; i < organisms.length; i++){
         let org = organisms[i];
         if(org.level === 0){
-            level0Orgs.append(org);
+            level0Orgs.push(org);
         }
         else if(org.level === 1){
-            level1Orgs.append(org);
+            level1Orgs.push(org);
         }
         else if(org.level === 2){
-            level2Orgs.append(org);
+            level2Orgs.push(org);
         }
     }
     if(level1Orgs.length === 0){
