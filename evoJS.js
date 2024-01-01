@@ -5,7 +5,7 @@ let organisms = [];
 // Canvas dimensions
 let xCanvas = 300;
 let yCanvas = 150;
-// Organisms at beginning of game 
+// Organisms at beginning of game
 let startingPlants = 100;
 let startingAnimals = 50;
 
@@ -358,20 +358,40 @@ function updateStats(){
 
 function moveOrganisms(){
     for(let i = 0; i < organisms.length; i++){
-        if(org.level > 1){
+        if(organisms[i].level > 1){
+            let org = organisms[i];
             let hungry = false;
             let scared = false;
+            let preyCount = 0;
+            let predatorCount = 0;
+            let mateCount = 0;
+            let lastPrey;
+            let lastPredator;
+            let lastMate;
             if(org.food <= 5){
                 hungry = true;
             }
             for(let j = 0; j < organisms.length; j++){
-                let predator = organisms[j];
-                if(j !== i && predator.level > org.level){
+                let tempOrg = organisms[j];
+                if(j !== i && tempOrg.level > org.level){
                     scared = true;
                 }
+                if(tempOrg.level > org.level){
+                    predatorCount += 1;
+                    lastPredator = tempOrg;
+                }
+                if(tempOrg.level < org.level){
+                    preyCount += 1;
+                    lastPrey = tempOrg;
+                }
+                if(tempOrg.level === org.level){
+                    mateCount += 1;
+                    lastMate = tempOrg;
+                }
             }
-            if(hungry){
-                let prey;
+
+            if(hungry && preyCount >= 1){
+                let prey = lastPrey;
                 for(let j = 0; j < organisms.length; j++){
                     let tempOrg = organisms[j];
                     let minDistance = Number.MAX_SAFE_INTEGER;
@@ -384,8 +404,8 @@ function moveOrganisms(){
                 }
                 moveTo(org, prey);
             }
-            else if(scared){
-                let predator;
+            else if(scared && predatorCount >= 1){
+                let predator = lastPredator;
                 for(let j = 0; j < organisms.length; j++){
                     let tempOrg = organisms[j];
                     let minDistance = Number.MAX_SAFE_INTEGER;
@@ -399,37 +419,44 @@ function moveOrganisms(){
                 moveAway(org, predator);
             }
             else{
-                let mate;
-                for(let j = 0; j < organisms.length; j++){
-                    let tempOrg = organisms[j];
-                    let minDistance = Number.MAX_SAFE_INTEGER;
-                    if(tempOrg.level === org.level){
-                        if(findDistance(org, tempOrg) < minDistance){
-                            mate = tempOrg;
-                            minDistance = findDistance(org, tempOrg);
+                if(mateCount >= 2) {
+                    let mate = lastMate;
+                    for (let j = 0; j < organisms.length; j++) {
+                        let tempOrg = organisms[j];
+                        let minDistance = Number.MAX_SAFE_INTEGER;
+                        if (tempOrg.level === org.level) {
+                            if (findDistance(org, tempOrg) < minDistance) {
+                                mate = tempOrg;
+                                minDistance = findDistance(org, tempOrg);
+                            }
                         }
                     }
+                    moveTo(org, mate);
                 }
-                moveTo(org, mate);
             }
         }
     }
 }
 
 function moveTo(org, goal){
-    distance = findDistance(org, goal);
-    dx = (org.x - goal.x) / distance;
-    dy = (org.y - goal.y) / distance;
-    console.log(1 === Math.sqrt(Math.pow(dx,2), Math.pow(dy,2)));
+    let distance = findDistance(org, goal);
+    let dx = (org.x - goal.x) / distance;
+    let dy = (org.y - goal.y) / distance;
+    console.log(1 === Math.sqrt(Math.pow(dx,2) + Math.pow(dy,2)));
+    console.log("old x" + org.x);
+    console.log("old y" + org.y);
     org.x += dx;
     org.y += dy;
+    console.log("Is Moving");
+    console.log("new x" + org.x)
+    console.log("new y" + org.y);
 }
 
 function moveAway(org, danger){
-    distance = findDistance(org, danger);
-    dx = (org.x - danger.x) / distance;
-    dy = (org.y - danger.y) / distance;
-    console.log(1 === Math.sqrt(Math.pow(dx,2), Math.pow(dy,2)));
+    let distance = findDistance(org, danger);
+    let dx = (org.x - danger.x) / distance;
+    let dy = (org.y - danger.y) / distance;
+    console.log(1 === Math.sqrt(Math.pow(dx,2) + Math.pow(dy,2)));
     org.x -= dx;
     org.y -= dy;
 }
