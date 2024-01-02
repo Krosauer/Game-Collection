@@ -1,20 +1,33 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Hockey</title>
-    <link rel="stylesheet" href="hockeyStyle.css">
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Hockey</title>
+  <link rel="stylesheet" href="hockeyStyle.css">
 </head>
-<body>
-    <div class="dropdown">
-        <button class="dropbtn" onclick="toggleDropdown()">Dropdown</button>
-        <div class="dropdown-content" id="myDropdown">
-            <a href="#">Option 1</a>
-            <a href="#">Option 2</a>
-            <a href="#">Option 3</a>
-        </div>
-    </div>
-    <script src="hockeyJS.js"></script>
+<body onload="setup()">
+<div class="dropdown" id="myButton">
+  <button class="dropbtn" onclick="toggleDropdown()">Choose Your Team</button>
+  <div class="dropdown-content" id="myDropdown">
+    <a onclick="chooseTeam('Wild')">Minnesota Wild</a>
+    <a onclick="chooseTeam('Blackhawks')">Chicago Blackhawks</a>
+    <a onclick="chooseTeam('Jets')">Winnipeg Jets</a>
+    <a onclick="chooseTeam('Avalanche')">Colorado Avalanche</a>
+    <a onclick="chooseTeam('Flames')">Calgary Flames</a>
+    <a onclick="chooseTeam('Oilers')">Edmonton Oilers</a>
+    <a onclick="chooseTeam('Kraken')">Seattle Kraken</a>
+    <a onclick="chooseTeam('Canucks')">Vancouver Canucks</a>
+  </div>
+</div>
+<div id="yourTeam">Your Team: Wild</div>
+<div id="currentGame"></div>
+<div id="lastGame">Last Game Score:</div>
+<table class="standings" id="standingTable"></table>
+<button onclick="simAllGames(new team('default', 0,0))" class="button">Sim All Games</button>
+<button onclick="playoffs()">Set Up Playoff Bracket</button>
+<div id="playoffs">Playoffs: </div>
+<table id="scheduleTable"></table>
+<script src="hockeyJS.js"></script>
 </body>
 </html>
