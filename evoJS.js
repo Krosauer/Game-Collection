@@ -1,13 +1,17 @@
-let stationaryDiameter = 2;
-let mobileDiameter = 4;
+let stationaryDiameter = 1.2;
+let mobileDiameter = 1.7;
 // Array of all current organisms
 let organisms = [];
+// Prevents organisms from moving out of bounds
+let wallDangers = [];
+let wallDangerCount = 50;
 // Canvas dimensions
 let xCanvas = 300;
 let yCanvas = 150;
 // Organisms at beginning of game
 let startingPlants = 100;
 let startingAnimals = 50;
+let scaredDistance = 40;
 
 let drawInterval;
 let predateInterval;
@@ -48,12 +52,34 @@ class Organism{
         else{
             this.food = 10;
             // Turns until natural death
-            this.lifeSpan = 70;
+            this.lifeSpan = 30;
         }
         this.diameter = stationaryDiameter;
         if(this.level >= 2){
             this.diameter = mobileDiameter;
         }
+        this.speed = this.level-1;
+        this.scared = false;
+    }
+}
+
+class wallDanger{
+    constructor(xP,yP) {
+        this.x = xP;
+        this.y = yP;
+    }
+}
+
+function generateWallDangers(){
+    for(let i = 0; i < wallDangerCount; i++){
+        let temp1 = new wallDanger(Math.random()*xCanvas, yCanvas*-10);
+        let temp2 = new wallDanger(Math.random()*xCanvas, yCanvas*10);
+        let temp3 = new wallDanger(xCanvas-10, Math.random()*yCanvas)
+        let temp4 = new wallDanger(xCanvas*10, Math.random()*yCanvas);
+        wallDangers.push(temp1);
+        wallDangers.push(temp2);
+        wallDangers.push(temp3);
+        wallDangers.push(temp4);
     }
 }
 
@@ -71,6 +97,7 @@ function setup() {
         let org = new Organism(Math.random()*xCanvas, Math.random()*yCanvas, 1, Math.random()*20 + 20, Math.random()*2 + 1, Math.random()*50 + 25)
         organisms.push(org);
     }
+    generateWallDangers();
     draw();
     changeIntervalsBack();
 }
@@ -135,14 +162,14 @@ function draw() {
         context.lineWidth = 0.5; // Set the outline width
         context.stroke();
     }
-    if(hasL2 && !intervalHasChanged){
+    /*if(hasL2 && !intervalHasChanged){
         changeIntervals();
         intervalHasChanged = true;
     }
     if(!hasL2 && intervalHasChanged){
         changeIntervalsBack();
         intervalHasChanged = false;
-    }
+    }*/
     moveOrganisms();
 }
 
@@ -224,7 +251,7 @@ function predate(){
         if(org1.level !== 0){
             for(let j = 0; j < organisms.length; j++){
                 let org2 = organisms[j];
-                if(!temp.includes(org2) && org1.level > org2.level && inRange(org1,org2,org1.diameter + org2.diameter)){
+                if(!temp.includes(org2) && (org1.level === org2.level+1 || org1.level === org2.level+2) && inRange(org1,org2,org1.diameter + org2.diameter)){
                     temp.push(org2);
                     org1.food += 5;
                 }
@@ -334,7 +361,7 @@ function updateStats(){
         }
     }
     // Printed statistics
-    let name0 = "Cyanobacteria:"
+    let name0 = "Cyanobacteria:";
     let l0BD = "Average birth distance: " + level0BirthDistanceSum / level0Orgs.length;
     let l0CN = "Average offspring count: " + level0ChildSum / level0Orgs.length;
     let l0RR = "Average reproduction range: " + level0ReproduceRangeSum / level0Orgs.length;
@@ -362,39 +389,44 @@ function moveOrganisms(){
             let org = organisms[i];
             let hungry = false;
             let scared = false;
+            let inReproduceRange = false;
             let preyCount = 0;
             let predatorCount = 0;
             let mateCount = 0;
-            let lastPrey;
-            let lastPredator;
-            let lastMate;
+            let prey= new Organism(0,0,0,0,0,0);
+            let predator= new Organism(0,0,0,0,0,0);
+            let mate= new Organism(0,0,0,0,0,0);
             if(org.food <= 5){
                 hungry = true;
             }
-            for(let j = 0; j < organisms.length; j++){
-                let tempOrg = organisms[j];
-                if(j !== i && tempOrg.level > org.level){
-                    scared = true;
-                }
-                if(tempOrg.level > org.level){
-                    predatorCount += 1;
-                    lastPredator = tempOrg;
-                }
-                if(tempOrg.level < org.level){
-                    preyCount += 1;
-                    lastPrey = tempOrg;
-                }
-                if(tempOrg.level === org.level){
-                    mateCount += 1;
-                    lastMate = tempOrg;
+            for(let j = 0; j < organisms.length; j++) {
+                if (j !== i) {
+                    let tempOrg = organisms[j];
+                    if (tempOrg.level > org.level && findDistance(org, tempOrg) <= scaredDistance) {
+                        scared = true;
+                    }
+                    if (tempOrg.level > org.level) {
+                        predatorCount += 1;
+                        predator = tempOrg;
+                    }
+                    if (tempOrg.level < org.level) {
+                        preyCount += 1;
+                        prey = tempOrg;
+                    }
+                    if (tempOrg.level === org.level) {
+                        mateCount += 1;
+                        mate = tempOrg;
+                        if (inRange(org, tempOrg, average(org.reproduceRange, tempOrg.reproduceRange))) {
+                            inReproduceRange = true;
+                        }
+                    }
                 }
             }
 
             if(hungry && preyCount >= 1){
-                let prey = lastPrey;
+                let minDistance = Number.MAX_SAFE_INTEGER;
                 for(let j = 0; j < organisms.length; j++){
                     let tempOrg = organisms[j];
-                    let minDistance = Number.MAX_SAFE_INTEGER;
                     if(tempOrg.level < org.level){
                         if(findDistance(org, tempOrg) < minDistance){
                             prey = tempOrg;
@@ -405,33 +437,31 @@ function moveOrganisms(){
                 moveTo(org, prey);
             }
             else if(scared && predatorCount >= 1){
-                let predator = lastPredator;
+                let minDistance = Number.MAX_SAFE_INTEGER;
                 for(let j = 0; j < organisms.length; j++){
                     let tempOrg = organisms[j];
-                    let minDistance = Number.MAX_SAFE_INTEGER;
-                    if(tempOrg.level > org.level){
-                        if(findDistance(org, tempOrg) < minDistance){
-                            predator = tempOrg;
-                            minDistance = findDistance(org, tempOrg);
-                        }
+                    if(organisms[j].level > org.level && findDistance(org, tempOrg) < minDistance){
+                        predator = tempOrg;
+                        minDistance = findDistance(org, tempOrg);
                     }
                 }
                 moveAway(org, predator);
             }
             else{
                 if(mateCount >= 2) {
-                    let mate = lastMate;
+                    let minDistance = Number.MAX_SAFE_INTEGER;
                     for (let j = 0; j < organisms.length; j++) {
                         let tempOrg = organisms[j];
-                        let minDistance = Number.MAX_SAFE_INTEGER;
-                        if (tempOrg.level === org.level) {
+                        if (tempOrg.level === org.level && tempOrg.x !== org.x && tempOrg.y !== org.y) {
                             if (findDistance(org, tempOrg) < minDistance) {
                                 mate = tempOrg;
                                 minDistance = findDistance(org, tempOrg);
                             }
                         }
                     }
-                    moveTo(org, mate);
+                    if(!inReproduceRange) {
+                        moveTo(org, mate);
+                    }
                 }
             }
         }
@@ -440,25 +470,22 @@ function moveOrganisms(){
 
 function moveTo(org, goal){
     let distance = findDistance(org, goal);
-    let dx = (org.x - goal.x) / distance;
-    let dy = (org.y - goal.y) / distance;
-    console.log(1 === Math.sqrt(Math.pow(dx,2) + Math.pow(dy,2)));
-    console.log("old x" + org.x);
-    console.log("old y" + org.y);
-    org.x += dx;
-    org.y += dy;
-    console.log("Is Moving");
-    console.log("new x" + org.x)
-    console.log("new y" + org.y);
+    let dx = (org.x - goal.x) / distance * org.speed;
+    let dy = (org.y - goal.y) / distance * org.speed;
+    org.x -= dx;
+    org.y -= dy;
 }
 
 function moveAway(org, danger){
     let distance = findDistance(org, danger);
     let dx = (org.x - danger.x) / distance;
     let dy = (org.y - danger.y) / distance;
-    console.log(1 === Math.sqrt(Math.pow(dx,2) + Math.pow(dy,2)));
-    org.x -= dx;
-    org.y -= dy;
+    if(org.x + dx + org.diameter/2 <= xCanvas && org.x - dx - org.diameter/2 >= 0) {
+        org.x += dx;
+    }
+    if(org.y + dy + org.diameter/2 <= yCanvas && org.y - dy - org.diameter/2 >= 0) {
+        org.y += dy;
+    }
 }
 
 function pause(){
