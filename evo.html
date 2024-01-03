@@ -4,31 +4,31 @@
         <meta charset="UTF-8">
         <meta name="viewport" content="width=device-width, initial-scale=1.0">
         <title>Organism Canvas</title>
-        <link rel = "stylesheet" href = "style.css">
+        <link rel = "stylesheet" href = "evoStyle.css">
         <link rel="stylesheet" href="https://cdn.jsdelivr.net/chartist.js/latest/chartist.min.css">
         <script src="https://cdn.plot.ly/plotly-latest.min.js"></script>
+        <script src="https://cdn.jsdelivr.net/chartist.js/latest/chartist.min.js"></script>
     </head>
     <body>
         <h1>
             Evolution Simulator
         </h1>
-        <canvas id = 'myCanvas'></canvas>
+        <canvas id = 'myCanvas'>canvas</canvas>
         <p>Game buttons and sliders here</p>
         <div id="keys">
             <button onclick="setup()" class="button" id="setupButton">Set Up Game</button>
             <button onclick="reset()" class="button">Reset Game</button>
             <button onclick="pause()" class="button">Pause Game</button>
             <button onclick="resume()" class="button">Resume Game</button>
-            <button class="button" id="updateButton">generate</button>
         </div>
         <div class="populations">
             <p>Populations: </p>
             <div class="ct-chart" id="myChart"></div>
-            <div id="myLineChart" style="width: 800px; height: 400px;"></div>
+            <div id="myLineChart" style="width: 1200px; height: 400px;"></div>
         </div>
         <p class="output">Statistics:
             <span id="stats"></span></p>
-        <script src="https://cdn.jsdelivr.net/chartist.js/latest/chartist.min.js"></script>
-        <script src = "Main.js" defer></script>
+        <p>The graphics in this game are optimized for Chrome.</p>
+        <script src = "evoJS.js" defer></script>
     </body>
 </html>

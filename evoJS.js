@@ -19,9 +19,15 @@ let whiteCount = 0;
 let predateCount = 0;
 let myChart;
 let myTimeSeries;
-let timeArray = [0,1,2];
-let greenPopArray = [5,10,20];
-let yellowPopArray = [1,2,4];
+let data;
+let layout;
+let timeCount = 0;
+let timeArray = [];
+let greenPopArray = [];
+let yellowPopArray = [];
+let bluePopArray = [];
+let orangePopArray = [];
+let redPopArray = [];
 
 let drawInterval;
 let predateInterval;
@@ -97,14 +103,30 @@ function generateChart2(){
 function generateTimeSeriesGraph() {
 
     // Sample data for multiple series
-    let data = [
+    data = [
         {
             x: timeArray,
-            y: greenPopArray,
+            y: redPopArray,
             type: 'scatter',
             mode: 'lines',
-            name: 'Green',
-            line: { color: 'rgb(24,158,73)' },
+            name: 'Red',
+            line: { color: 'rgb(211,30,60)' },
+        },
+        {
+            x: timeArray,
+            y: orangePopArray,
+            type: 'scatter',
+            mode: 'lines',
+            name: 'Orange',
+            line: { color: 'rgb(247,144,30)' },
+        },
+        {
+            x: timeArray,
+            y: bluePopArray,
+            type: 'scatter',
+            mode: 'lines',
+            name: 'Blue',
+            line: { color: 'rgb(21,118,187)' },
         },
         {
             x: timeArray,
@@ -114,12 +136,20 @@ function generateTimeSeriesGraph() {
             name: 'Yellow',
             line: { color: 'rgb(218,194,37)' },
         },
+        {
+            x: timeArray,
+            y: greenPopArray,
+            type: 'scatter',
+            mode: 'lines',
+            name: 'Green',
+            line: { color: 'rgb(24,158,73)' },
+        },
 
         // Add more traces as needed
     ];
 
     // Layout configuration
-    let layout = {
+    layout = {
         title: 'Population Graph',
         xaxis: {
             title: 'Generation',
@@ -134,15 +164,17 @@ function generateTimeSeriesGraph() {
 }
 
 // Add the event listener to a button
-document.getElementById('generateButton').addEventListener('click', generateTimeSeriesGraph);
+document.getElementById('setupButton').addEventListener('click', generateTimeSeriesGraph);
 
 function updateTimeSeriesGraph(){
-    myTimeSeries.data[0].y = greenPopArray;
-    myTimeSeries.data[1].y = yellowPopArray;
+    data[4].y = greenPopArray;
+    data[3].y = yellowPopArray;
+    data[2].y = bluePopArray;
+    data[1].y = orangePopArray;
+    data[0].y = redPopArray;
+    console.log('were making it')
     myTimeSeries = Plotly.update('myLineChart', data, layout);
 }
-
-document.getElementById('updateButton').addEventListener('click', updateTimeSeriesGraph);
 
 // May change from button to onload later
 function setup() {
@@ -304,7 +336,7 @@ function reproduce(){
     }
     updatePopCounts();
     updateStats();
-    generateTimeSeriesGraph();
+    updateTimeSeriesGraph();
 }
 
 //Checks to see if predator organisms are touching prey organisms. Kills prey, increments food for predator.
@@ -603,11 +635,19 @@ function reset(){
     redCount = 0;
     purpleCount = 0;
     whiteCount = 0;
+    timeCount = 0;
+    greenPopArray = [];
+    yellowPopArray = [];
+    bluePopArray = [];
+    orangePopArray = [];
+    redPopArray = [];
+    timeArray = [];
     context.clearRect(0,0, canvas.width, canvas.height);
     context.closePath();
     hasL1 = false;
     hasL2 = false;
     hasL3 = false;
+    pause();
 }
 
 
@@ -624,10 +664,15 @@ function average(num1, num2){
 }
 
 function updatePopCounts(){
+    timeArray.push(timeCount);
     greenPopArray.push(greenCount);
     yellowPopArray.push(yellowCount);
-    console.log(greenPopArray.length);
+    bluePopArray.push(blueCount);
+    orangePopArray.push(orangeCount);
+    redPopArray.push(redCount);
+    timeCount++;
 }
+
 
 function incrementPopCounts(org){
     if(org.level === 0){
