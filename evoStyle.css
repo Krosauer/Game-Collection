@@ -9,3 +9,8 @@
     width: 100px;
     border: 2px solid; 
 }
+.populations{
+    margin: 10px;
+    border: 5px solid black;
+    padding: 5px;
+}

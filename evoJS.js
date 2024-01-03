@@ -1,17 +1,27 @@
-let stationaryDiameter = 1.2;
-let mobileDiameter = 1.7;
+let stationaryDiameter = 2;
+let mobileDiameter = 3;
 // Array of all current organisms
 let organisms = [];
-// Prevents organisms from moving out of bounds
-let wallDangers = [];
-let wallDangerCount = 50;
 // Canvas dimensions
 let xCanvas = 300;
 let yCanvas = 150;
 // Organisms at beginning of game
-let startingPlants = 100;
-let startingAnimals = 50;
+let startingPlants = 10;
+let startingAnimals = 0;
 let scaredDistance = 40;
+let greenCount = 0;
+let yellowCount = 0;
+let blueCount = 0;
+let orangeCount = 0;
+let redCount = 0;
+let purpleCount = 0;
+let whiteCount = 0;
+let predateCount = 0;
+let myChart;
+let myTimeSeries;
+let timeArray = [0,1,2];
+let greenPopArray = [5,10,20];
+let yellowPopArray = [1,2,4];
 
 let drawInterval;
 let predateInterval;
@@ -22,6 +32,7 @@ let evolutionRate = .001;
 // Checks if the organism array contains organisms with species of level 1,2
 let hasL1 = false;
 let hasL2 = false;
+let hasL3 = false;
 let intervalHasChanged = false;
 
 let canvas;
@@ -59,29 +70,79 @@ class Organism{
             this.diameter = mobileDiameter;
         }
         this.speed = this.level-1;
-        this.scared = false;
+        this.prey = null;
     }
 }
 
-class wallDanger{
-    constructor(xP,yP) {
-        this.x = xP;
-        this.y = yP;
-    }
+function generateChart2(){
+    let data = {
+        labels: ['Green', 'Yellow', 'Blue', 'Orange', 'Red', 'Purple', 'White'],
+        series: [
+            [greenCount, yellowCount, blueCount, orangeCount, redCount, purpleCount, whiteCount] // Sample data values
+        ]
+    };
+
+// Chart options
+    let options = {
+        seriesBarDistance: 15,
+        axisY: {
+            onlyInteger: true
+        }
+    };
+
+// Create the bar chart
+    myChart = new Chartist.Bar('#myChart', data, options);
 }
 
-function generateWallDangers(){
-    for(let i = 0; i < wallDangerCount; i++){
-        let temp1 = new wallDanger(Math.random()*xCanvas, yCanvas*-10);
-        let temp2 = new wallDanger(Math.random()*xCanvas, yCanvas*10);
-        let temp3 = new wallDanger(xCanvas-10, Math.random()*yCanvas)
-        let temp4 = new wallDanger(xCanvas*10, Math.random()*yCanvas);
-        wallDangers.push(temp1);
-        wallDangers.push(temp2);
-        wallDangers.push(temp3);
-        wallDangers.push(temp4);
-    }
+function generateTimeSeriesGraph() {
+
+    // Sample data for multiple series
+    let data = [
+        {
+            x: timeArray,
+            y: greenPopArray,
+            type: 'scatter',
+            mode: 'lines',
+            name: 'Green',
+            line: { color: 'rgb(24,158,73)' },
+        },
+        {
+            x: timeArray,
+            y: yellowPopArray,
+            type: 'scatter',
+            mode: 'lines',
+            name: 'Yellow',
+            line: { color: 'rgb(218,194,37)' },
+        },
+
+        // Add more traces as needed
+    ];
+
+    // Layout configuration
+    let layout = {
+        title: 'Population Graph',
+        xaxis: {
+            title: 'Generation',
+        },
+        yaxis: {
+            title: 'Population',
+        },
+    };
+
+    // Create the chart
+    myTimeSeries = Plotly.newPlot('myLineChart', data, layout);
 }
+
+// Add the event listener to a button
+document.getElementById('generateButton').addEventListener('click', generateTimeSeriesGraph);
+
+function updateTimeSeriesGraph(){
+    myTimeSeries.data[0].y = greenPopArray;
+    myTimeSeries.data[1].y = yellowPopArray;
+    myTimeSeries = Plotly.update('myLineChart', data, layout);
+}
+
+document.getElementById('updateButton').addEventListener('click', updateTimeSeriesGraph);
 
 // May change from button to onload later
 function setup() {
@@ -97,16 +158,16 @@ function setup() {
         let org = new Organism(Math.random()*xCanvas, Math.random()*yCanvas, 1, Math.random()*20 + 20, Math.random()*2 + 1, Math.random()*50 + 25)
         organisms.push(org);
     }
-    generateWallDangers();
+    generateChart2();
     draw();
     changeIntervalsBack();
 }
 
 function setIntervals(){
-    dieInterval = setInterval(die,100);
-    predateInterval = setInterval(predate, 100);
     drawInterval = setInterval(draw,50);
     reproduceInterval = setInterval(reproduce,200);
+    dieInterval = setInterval(die,200);
+    predateInterval = setInterval(predate, 200);
 }
 function clearIntervals(){
     clearInterval(drawInterval);
@@ -175,6 +236,7 @@ function draw() {
 
 
 function reproduce(){
+    generateChart2();
     // Organisms that are newly born
     let newBorn = [];
     // Organisms that have not maxed out their reproductive capacity in a given turn
@@ -195,7 +257,7 @@ function reproduce(){
                     org2.food -= 5;
                     // Average of parent birth distances
                     let b = average(org1.birthDistance, org2.birthDistance);
-                    // Randmizes coordinates with range birth distance
+                    // Randomizes coordinates with range birth distance
                     let xPos = average(org1.x,org2.x) + Math.random()*b - b/2;
                     let yPos = average(org1.y, org2.y) + Math.random()*b - b/2;
                     // Randomizes birth distance with range 10
@@ -212,7 +274,7 @@ function reproduce(){
                     else{
                         level = org1.level;
                     }
-                    // Randomizes maximimum children, range 2
+                    // Randomizes maximum children, range 2
                     let maxChild = average(org1.maxChild, org2.maxChild) + Math.random()*2 - 1;
                     // Randomizes reproduction rang, range 20
                     let reproduceRange = average(org1.reproduceRange, org2.reproduceRange) + Math.random()*20 - 10
@@ -237,10 +299,12 @@ function reproduce(){
     }
     // Adds new organisms to main organism array
     for(let i = 0; i < newBorn.length; i++){
-        let org = newBorn[i]
-        organisms.push(org);
+        incrementPopCounts(newBorn[i]);
+        organisms.push(newBorn[i]);
     }
+    updatePopCounts();
     updateStats();
+    generateTimeSeriesGraph();
 }
 
 //Checks to see if predator organisms are touching prey organisms. Kills prey, increments food for predator.
@@ -261,6 +325,7 @@ function predate(){
     for(let i = organisms.length - 1; i >= 0; i--){
         for(let j = 0; j < temp.length; j++){
             if(organisms[i] === temp[j]){
+                decrementPopCounts(organisms[i]);
                 organisms.splice(i,1);
                 break;
             }
@@ -300,6 +365,7 @@ function die(){
     for(let i = organisms.length - 1; i >= 0; i--){
         for(let j = 0; j < dead.length; j++){
             if(organisms[i] === dead[j]){
+                decrementPopCounts(organisms[i]);
                 organisms.splice(i,1);
                 break;
             }
@@ -311,6 +377,7 @@ function updateStats(){
     let level0Orgs = [];
     let level1Orgs = [];
     let level2Orgs = [];
+    let level3Orgs = [];
     // Adds organisms to respective arrays according to their species
     for(let i = 0; i < organisms.length; i++){
         let org = organisms[i];
@@ -323,6 +390,9 @@ function updateStats(){
         else if(org.level === 2){
             level2Orgs.push(org);
         }
+        else if(org.level === 3){
+            level3Orgs.push(org);
+        }
     }
     // Updates has species booleans
     if(level1Orgs.length === 0){
@@ -330,6 +400,9 @@ function updateStats(){
     }
     if(level2Orgs.length === 0){
         hasL2 = false;
+    }
+    if(level3Orgs.length === 0){
+        hasL3 = false;
     }
     let level0BirthDistanceSum = 0;
     let level0ChildSum = 0;
@@ -340,6 +413,9 @@ function updateStats(){
     let level2BirthDistanceSum = 0;
     let level2ChildSum = 0;
     let level2ReproduceRangeSum = 0;
+    let level3BirthDistanceSum = 0;
+    let level3ChildSum = 0;
+    let level3ReproduceRangeSum = 0;
     //Finds average statistics for each species
     for(let k = 0; k < organisms.length; k++){
         if(organisms[k].level === 0) {
@@ -359,26 +435,39 @@ function updateStats(){
             level2ChildSum += organisms[k].maxChild;
             level2ReproduceRangeSum += organisms[k].reproduceRange;
         }
+        else if(organisms[k].level === 3){
+            hasL3 = true;
+            level3BirthDistanceSum += organisms[k].birthDistance;
+            level3ChildSum += organisms[k].maxChild;
+            level3ReproduceRangeSum += organisms[k].reproduceRange;
+        }
     }
     // Printed statistics
-    let name0 = "Cyanobacteria:";
+    let name0 = "Green:";
     let l0BD = "Average birth distance: " + level0BirthDistanceSum / level0Orgs.length;
     let l0CN = "Average offspring count: " + level0ChildSum / level0Orgs.length;
     let l0RR = "Average reproduction range: " + level0ReproduceRangeSum / level0Orgs.length;
-    let name1 = "Zooplankton:"
+    let name1 = "Yellow:"
     let l1BD = "Average birth distance: " + level1BirthDistanceSum / level1Orgs.length;
     let l1CN = "Average offspring count: " + level1ChildSum / level1Orgs.length;
     let l1RR = "Average reproduction range: " + level1ReproduceRangeSum / level1Orgs.length;
-    let name2 = "Fish:"
+    let name2 = "Blue:"
     let l2BD = "Average birth distance: " + level2BirthDistanceSum / level2Orgs.length;
     let l2CN = "Average offspring count: " + level2ChildSum / level2Orgs.length;
     let l2RR = "Average reproduction range: " + level2ReproduceRangeSum / level2Orgs.length;
+    let name3 = "Orange:"
+    let l3BD = "Average birth distance: " + level3BirthDistanceSum / level3Orgs.length;
+    let l3CN = "Average offspring count: " + level3ChildSum / level3Orgs.length;
+    let l3RR = "Average reproduction range: " + level3ReproduceRangeSum / level3Orgs.length;
     let answer = "\n" + name0 + "\n" + l0BD + "\n" + l0CN + "\n" + l0RR;
     if(hasL1){
         answer += "\n" + name1 + "\n" + l1BD + "\n" + l1CN + "\n" + l1RR;
     }
     if(hasL2){
         answer += "\n" + name2 + "\n" + l2BD + "\n" + l2CN + "\n" + l2RR;
+    }
+    if(hasL3){
+        answer += "\n" + name3 + "\n" + l3BD + "\n" + l3CN + "\n" + l3RR;
     }
     document.getElementById('stats').innerText = answer;
 }
@@ -393,7 +482,7 @@ function moveOrganisms(){
             let preyCount = 0;
             let predatorCount = 0;
             let mateCount = 0;
-            let prey= new Organism(0,0,0,0,0,0);
+            this.prey= new Organism(0,0,0,0,0,0);
             let predator= new Organism(0,0,0,0,0,0);
             let mate= new Organism(0,0,0,0,0,0);
             if(org.food <= 5){
@@ -411,7 +500,7 @@ function moveOrganisms(){
                     }
                     if (tempOrg.level < org.level) {
                         preyCount += 1;
-                        prey = tempOrg;
+                        this.prey = tempOrg;
                     }
                     if (tempOrg.level === org.level) {
                         mateCount += 1;
@@ -424,17 +513,11 @@ function moveOrganisms(){
             }
 
             if(hungry && preyCount >= 1){
-                let minDistance = Number.MAX_SAFE_INTEGER;
-                for(let j = 0; j < organisms.length; j++){
-                    let tempOrg = organisms[j];
-                    if(tempOrg.level < org.level){
-                        if(findDistance(org, tempOrg) < minDistance){
-                            prey = tempOrg;
-                            minDistance = findDistance(org, tempOrg);
-                        }
-                    }
+                if(predateCount % 5 === 0){
+                    changePrey(org);
                 }
-                moveTo(org, prey);
+                moveTo(org, this.prey);
+                predateCount++;
             }
             else if(scared && predatorCount >= 1){
                 let minDistance = Number.MAX_SAFE_INTEGER;
@@ -488,6 +571,19 @@ function moveAway(org, danger){
     }
 }
 
+function changePrey(org){
+    let minDistance = Number.MAX_SAFE_INTEGER;
+    for(let j = 0; j < organisms.length; j++){
+        let tempOrg = organisms[j];
+        if(tempOrg.level < org.level){
+            if(findDistance(org, tempOrg) < minDistance){
+                this.prey = tempOrg;
+                minDistance = findDistance(org, tempOrg);
+            }
+        }
+    }
+}
+
 function pause(){
     clearIntervals();
     context.closePath();
@@ -500,9 +596,18 @@ function resume(){
 
 function reset(){
     organisms = [];
+    greenCount = 0;
+    yellowCount = 0;
+    blueCount = 0;
+    orangeCount = 0;
+    redCount = 0;
+    purpleCount = 0;
+    whiteCount = 0;
     context.clearRect(0,0, canvas.width, canvas.height);
     context.closePath();
     hasL1 = false;
+    hasL2 = false;
+    hasL3 = false;
 }
 
 
@@ -516,4 +621,58 @@ function findDistance(org1, org2){
 
 function average(num1, num2){
     return (num1 + num2) / 2;
+}
+
+function updatePopCounts(){
+    greenPopArray.push(greenCount);
+    yellowPopArray.push(yellowCount);
+    console.log(greenPopArray.length);
+}
+
+function incrementPopCounts(org){
+    if(org.level === 0){
+        greenCount++;
+    }
+    if(org.level === 1){
+        yellowCount++;
+    }
+    if(org.level === 2){
+        blueCount++;
+    }
+    if(org.level === 3){
+        orangeCount++;
+    }
+    if(org.level === 4){
+        redCount++;
+    }
+    if(org.level === 5){
+        purpleCount++;
+    }
+    if(org.level === 6){
+        whiteCount++;
+    }
+}
+
+function decrementPopCounts(org){
+    if(org.level === 0 && greenCount > 0){
+        greenCount--;
+    }
+    if(org.level === 1 && yellowCount > 0){
+        yellowCount--;
+    }
+    if(org.level === 2 && blueCount > 0){
+        blueCount--;
+    }
+    if(org.level === 3 && orangeCount > 0){
+        orangeCount--;
+    }
+    if(org.level === 4 && redCount > 0){
+        redCount--;
+    }
+    if(org.level === 5 && purpleCount > 0){
+        purpleCount--;
+    }
+    if(org.level === 6 && whiteCount > 0){
+        whiteCount--;
+    }
 }
