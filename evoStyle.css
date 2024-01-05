@@ -7,10 +7,20 @@
 #input{
     height: 50px;
     width: 100px;
-    border: 2px solid; 
+    border: 2px solid;
 }
 .populations{
     margin: 10px;
     border: 5px solid black;
+    padding: 5px;
+}
+table, th{
+    border:1px solid black;
+    width: 25%;
+}
+td{
+    border:1px solid black;
+    width: 25%;
+    text-align: center;
     padding: 5px;
 }
