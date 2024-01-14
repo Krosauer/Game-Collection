@@ -10,7 +10,7 @@
     </head>
     <body>
         <h1>
-            Evolution Simulator
+            Microevolution Simulator
         </h1>
         <canvas id = 'myCanvas'></canvas>
         <p>Game buttons and sliders here</p>
@@ -20,17 +20,20 @@
             <button onclick="pause()" class="button">Pause Game</button>
             <button onclick="resume()" class="button">Resume Game</button>
         </div>
-        <p>Use Slow Down for behaviors to be more indicative of success</p>
+        <p>Use Slow Down for behaviors to be more indicative of success (Not recommended until a stable orange population is achieved)</p>
         <button onclick="changeIntervals()" class="button">Slow Down</button>
         <button onclick="changeIntervalsBack()">Reset Speed</button>
         <div class="populations">
             <p>Populations: </p>
             <div class="ct-chart" id="myChart"></div>
             <div id="myLineChart" style="width: 1200px; height: 400px;"></div>
+            <div id="myLineChart2" style="width: 1200px; height: 400px;"></div>
         </div>
-        <p class="output">Statistics:
+        <p class="output">Traits:
             <span id="stats"></span></p>
         <table class="statTable" id="statTable"></table>
+        <p class="output">Deaths:</p>
+        <table class="statTable" id="deathTable"></table>
         <p>The graphics in this game are optimized for Chrome.</p>
         <script src="https://cdn.jsdelivr.net/chartist.js/latest/chartist.min.js"></script>
         <script src = "evoJS.js" defer></script>
