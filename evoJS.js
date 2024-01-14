@@ -34,6 +34,10 @@ let redPopArray = [];
 let purplePopArray = [];
 let whitePopArray = [];
 
+let greenDeath = [];
+let yellowDeath = [];
+let blueDeath = [];
+
 let drawInterval;
 let predateInterval;
 let dieInterval;
@@ -223,6 +227,9 @@ function generateStatisticsTable() {
     let th4 = headerRow.insertCell(4);
     let th5 = headerRow.insertCell(5);
     let th6 = headerRow.insertCell(6);
+    let th7 = headerRow.insertCell(7);
+    let th8 = headerRow.insertCell(8);
+    let th9 = headerRow.insertCell(9);
     th0.innerHTML = 'Species';
     th1.innerHTML = 'Birth Distance';
     th2.innerHTML  = 'Litter Size';
@@ -230,6 +237,9 @@ function generateStatisticsTable() {
     th4.innerHTML = 'Speed';
     th5.innerHTML = 'Overpopulation Resistance';
     th6.innerHTML = 'Mutation Rate';
+    th7.innerHTML = 'Overpopulation Deaths';
+    th8.innerHTML = 'Natural Deaths';
+    th9.innerHTML = 'Starvation Deaths';
 
     let statistics = updateStats();
     // Create the specified number of rows
@@ -243,6 +253,9 @@ function generateStatisticsTable() {
             let cell4 = row.insertCell(4);
             let cell5 = row.insertCell(5);
             let cell6 = row.insertCell(6);
+            let cell7 = row.insertCell(7);
+            let cell8 = row.insertCell(8);
+            let cell9 = row.insertCell(9);
             cell0.innerHTML = statistics[i][0];
             cell1.innerHTML = statistics[i][1].toFixed(2);
             cell2.innerHTML = statistics[i][2].toFixed(2);
@@ -250,6 +263,9 @@ function generateStatisticsTable() {
             cell4.innerHTML = statistics[i][4].toFixed(2);
             cell5.innerHTML = statistics[i][5].toFixed(2);
             cell6.innerHTML = statistics[i][6].toFixed(2);
+            cell7.innerHTML = statistics[i][7].toFixed(2);
+            cell8.innerHTML = statistics[i][8].toFixed(2);
+            cell9.innerHTML = statistics[i][9].toFixed(2);
             cell0.className = 'matchup';
         }
     }
@@ -405,8 +421,8 @@ function reproduce(){
                     }
                     let mutationRate = average(org1.mutationRate, org2.mutationRate) + Math.random()*0.2*m - 0.1*m;
                     let diameter = average(org1.diameter, org2.diameter) + Math.random()*m - 0.5*m;
-                    if(diameter > 3){
-                        diameter = 3;
+                    if(level === 0){
+                        diameter = 2;
                     }
                     org1.food -= 5*diameter;
                     org2.food -= 5*diameter;
@@ -448,7 +464,7 @@ function predate(){
                 let org2 = organisms[j];
                 if(!temp.includes(org2) && (org1.level === org2.level+1 || org1.level === org2.level+2) && inRange(org1,org2,org1.diameter + org2.diameter)){
                     temp.push(org2);
-                    org1.food += 5;
+                    org1.food += org2.diameter;
                 }
             }
         }
@@ -476,15 +492,18 @@ function die(){
             if (org1.level === org2.level && inRange(org1, org2, average(org1.diameter/org1.crowded, org2.diameter/org1.crowded))) {
                 if(org1.diameter < org2.diameter) {
                     dead.push(org1);
+                    console.log('pop ' + org1.level);
                 }
                 else {
                     dead.push(org2);
+                    console.log('pop ' + org2.level);
                 }
                 //Population Death
             }
         }
         if(org1.timeAlive >= org1.lifeSpan){
             dead.push(org1);
+            console.log('nat ' + org1.level);
             //Natural Death
         }
         if(org1.level > 0){
@@ -492,6 +511,7 @@ function die(){
         }
         if(org1.level > 0 && org1.food <= 0){
             dead.push(org1);
+            console.log('food ' + org1.level);
             //Food Limited Death
         }
     }
@@ -561,7 +581,7 @@ function moveOrganisms(){
             this.prey= new Organism(0,0,0,0,0,0,0,0,0,0);
             let predator= new Organism(0,0,0,0,0,0,0,0,0,0);
             let mate= new Organism(0,0,0,0,0,0,0,0,0,0);
-            if(org.food <= 10){
+            if(org.food <= 15){
                 hungry = true;
             }
             for(let j = 0; j < organisms.length; j++) {
